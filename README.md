@@ -3,7 +3,7 @@
 
 [![NPM](https://nodei.co/npm/line-reader.png?downloads=true)](https://www.npmjs.com/package/line-reader)
 
-[![apidoc](https://npmdoc.github.io/node-npmdoc-line-reader/build/screenCapture.buildNpmdoc.browser.%252Fhome%252Ftravis%252Fbuild%252Fnpmdoc%252Fnode-npmdoc-line-reader%252Ftmp%252Fbuild%252Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-line-reader/build/apidoc.html)
+[![apidoc](https://npmdoc.github.io/node-npmdoc-line-reader/build/screenCapture.buildApidoc.browser.%252Fhome%252Ftravis%252Fbuild%252Fnpmdoc%252Fnode-npmdoc-line-reader%252Ftmp%252Fbuild%252Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-line-reader/build/apidoc.html)
 
 ![npmPackageListing](https://npmdoc.github.io/node-npmdoc-line-reader/build/screenCapture.npmPackageListing.svg)
 
