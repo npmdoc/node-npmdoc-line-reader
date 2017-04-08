@@ -1,0 +1,245 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/nickewing/line-reader#readme">line-reader (v0.4.0)</a>
+</h1>
+<h4>Asynchronous, buffered, line-by-line file/stream reader</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.line-reader">module line-reader</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.line-reader.eachLine">
+            function <span class="apidocSignatureSpan">line-reader.</span>eachLine
+            <span class="apidocSignatureSpan">(filename, options, iteratee, cb)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.line-reader.open">
+            function <span class="apidocSignatureSpan">line-reader.</span>open
+            <span class="apidocSignatureSpan">(filenameOrStream, options, cb)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.line-reader" id="apidoc.module.line-reader">module line-reader</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.line-reader.eachLine" id="apidoc.element.line-reader.eachLine">
+        function <span class="apidocSignatureSpan">line-reader.</span>eachLine
+        <span class="apidocSignatureSpan">(filename, options, iteratee, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function eachLine(filename, options, iteratee, cb) {
+  if (options instanceof Function) {
+    cb = iteratee;
+    iteratee = options;
+    options = undefined;
+  }
+  var asyncIteratee = iteratee.length === 3;
+
+  var theReader;
+  var getReaderCb;
+
+  open(filename, options, function(err, reader) {
+    theReader = reader;
+    if (getReaderCb) {
+      getReaderCb(reader);
+    }
+
+    if (err) {
+      if (cb) cb(err);
+      return;
+    }
+
+    function finish(err) {
+      reader.close(function(err2) {
+        if (cb) cb(err || err2);
+      });
+    }
+
+    function newRead() {
+      if (reader.hasNextLine()) {
+        setImmediate(readNext);
+      } else {
+        finish();
+      }
+    }
+
+    function continueCb(continueReading) {
+      if (continueReading !== false) {
+        newRead();
+      } else {
+        finish();
+      }
+    }
+
+    function readNext() {
+      reader.nextLine(function(err, line) {
+        if (err) {
+          finish(err);
+        }
+
+        var last = !reader.hasNextLine();
+
+        if (asyncIteratee) {
+          iteratee(line, last, continueCb);
+        } else {
+          if (iteratee(line, last) !== false) {
+            newRead();
+          } else {
+            finish();
+          }
+        }
+      });
+    }
+
+    newRead();
+  });
+
+  // this hook is only for the sake of testing; if you choose to use it,
+  // please don't file any issues (unless you can also reproduce them without
+  // using this).
+  return {
+    getReader: function(cb) {
+      if (theReader) {
+        cb(theReader);
+      } else {
+        getReaderCb = cb;
+      }
+    }
+  };
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+The `eachLine` function reads each line of the given file.  Upon each new line,
+the given callback function is called with two parameters: the line read and a
+boolean value specifying whether the line read was the last line of the file.
+If the callback returns `false`, reading will stop and the file will be closed.
+
+var lineReader = require('line-reader');
+
+lineReader.<span class="apidocCodeKeywordSpan">eachLine</span>('file.txt', function(line, last) {
+  console.log(line);
+
+  if (/* done */) {
+    return false; // stop reading
+  }
+});
+...</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.line-reader.open" id="apidoc.element.line-reader.open">
+        function <span class="apidocSignatureSpan">line-reader.</span>open
+        <span class="apidocSignatureSpan">(filenameOrStream, options, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function open(filenameOrStream, options, cb) {
+  if (options instanceof Function) {
+    cb = options;
+    options = undefined;
+  }
+
+  var readStream;
+
+  if (typeof filenameOrStream.read == 'function') {
+    readStream = filenameOrStream;
+  } else if (typeof filenameOrStream === 'string' || filenameOrStream instanceof String) {
+    readStream = fs.createReadStream(filenameOrStream);
+  } else {
+    cb(new Error('Invalid file argument for LineReader.open.  Must be filename or stream.'));
+    return;
+  }
+
+  readStream.pause();
+  createLineReader(readStream, options, cb);
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  console.log("I'm done!!");
+});
+
+For more granular control, `open`, `hasNextLine`, and `nextLine` maybe be used
+to iterate a file (but you must `close` it yourself):
+
+// or read line by line:
+lineReader.<span class="apidocCodeKeywordSpan">open</span>('file.txt', function(err, reader) {
+  if (err) throw err;
+  if (reader.hasNextLine()) {
+    reader.nextLine(function(err, line) {
+      try {
+        if (err) throw err;
+        console.log(line);
+      } finally {
+...</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
